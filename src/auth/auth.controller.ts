@@ -1,43 +1,45 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  UnauthorizedException,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { Response } from 'express';
+import { SignUpDTO } from './dto/sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  @Post('/signin')
+  async signIn(
+    @Body() signInDto: SignInDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = await this.authService.signIn(signInDto);
+    if (!token) throw new UnauthorizedException();
+    res.cookie('token', token);
+    res.send({ success: true });
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('/signout')
+  signOut(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('token');
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Post('/signup')
+  async signUp(
+    @Body() body: SignUpDTO,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.signUp(body);
+    res.cookie('token', result, {
+      // httpOnly:
+      // secure:
+    });
+    return true;
   }
 }

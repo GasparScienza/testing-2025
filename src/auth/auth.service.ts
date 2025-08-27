@@ -1,30 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { SignUpDTO } from './dto/sign-up.dto';
+import { ConfigService } from '@nestjs/config';
+import { isPrismaKnown } from 'src/prisma/known-error.helper';
+
+const SALT_ROUNDS = 12;
 
 @Injectable()
 export class AuthService {
-  create() {
-    return 'This action adds a new auth';
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+
+  async signIn(body: SignInDto) {
+    const { email, password: pass } = body;
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: email.toLocaleLowerCase().trim(),
+      },
+    });
+    if (!user) throw new UnauthorizedException('Credenciales inválidas');
+
+    const isMatch = await bcrypt.compare(pass, user.password);
+    if (!isMatch) throw new UnauthorizedException('Credenciales inválidas');
+
+    const payload = { sub: user.id, role: user.role };
+    return await this.jwtService.signAsync(payload);
   }
 
-  signIn(body: SignInDto) {
-    return body;
-  }
+  async signUp(body: SignUpDTO) {
+    const { email, password, name, surname, address, dni, postalCode } = body;
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+    const normalizedEmail = email.toLowerCase().trim();
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    try {
+      const created = await this.prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          password: hash,
+          role: 'USER',
+          client: {
+            create: {
+              name,
+              surname,
+              address,
+              postalCode,
+              dni: BigInt(String(dni)),
+            },
+          },
+        },
+        include: { client: true },
+      });
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+      return await this.jwtService.signAsync(
+        { sub: created.id, role: created.role },
+        { secret: this.configService.get<string>('SECRET_JWT') },
+      );
+    } catch (e: unknown) {
+      const errorMsg = 'Email or dni already used';
+      if (isPrismaKnown(e) && e.code === 'P2002') {
+        throw new BadRequestException(
+          e && e.code === 'P2002' ? errorMsg : 'Error in signup',
+        );
+      }
+      throw e;
+    }
   }
 }
