@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,13 +13,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  client Client?
+}
+
 model Client {
-  id      String @id @default(uuid())
-  name    String
-  surname String
-  address String
-  dni     BigInt
-  pets    Pet[]
+  id         String @id @default(uuid())
+  name       String
+  surname    String
+  address    String
+  dni        BigInt @unique
+  postalCode String
+  pets       Pet[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Pet {
