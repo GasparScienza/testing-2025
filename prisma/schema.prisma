@@ -13,3 +13,21 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Client {
+  id      String @id @default(uuid())
+  name    String
+  surname String
+  address String
+  dni     BigInt
+  pets    Pet[]
+}
+
+model Pet {
+  id     String @id @default(uuid())
+  name   String
+  specie String
+
+  clientId String
+  client   Client @relation(references: [id], fields: [clientId])
+}
