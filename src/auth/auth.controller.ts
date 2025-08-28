@@ -4,28 +4,33 @@ import {
   Body,
   UnauthorizedException,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { Response } from 'express';
 import { SignUpDTO } from './dto/sign-up.dto';
+import { AuthGuard } from './guards/auth.guard';
+import { Roles } from './decorators/role.decorator';
+import { RolesGuard } from './guards/role.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/signin')
+  @Post('/login')
   async signIn(
     @Body() signInDto: SignInDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = await this.authService.signIn(signInDto);
+    console.log('token:', token);
     if (!token) throw new UnauthorizedException();
     res.cookie('token', token);
     res.send({ success: true });
   }
 
-  @Post('/signout')
+  @Post('/logout')
   signOut(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token');
   }
@@ -41,5 +46,12 @@ export class AuthController {
       // secure:
     });
     return true;
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('ADMIN', 'USER')
+  @Post('/role')
+  testRouteWithRole() {
+    return;
   }
 }

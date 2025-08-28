@@ -64,7 +64,9 @@ export class AuthService {
 
       return await this.jwtService.signAsync(
         { sub: created.id, role: created.role },
-        { secret: this.configService.get<string>('SECRET_JWT') },
+        {
+          secret: this.configService.getOrThrow<string>('SECRET_JWT'),
+        },
       );
     } catch (e: unknown) {
       const errorMsg = 'Email or dni already used';
