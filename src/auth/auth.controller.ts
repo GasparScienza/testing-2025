@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UnauthorizedException,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { Response } from 'express';
@@ -26,8 +19,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = await this.authService.signIn(signInDto);
-    console.log('token:', token);
-    if (!token) throw new UnauthorizedException();
     res.cookie('token', token);
     res.send({ success: true });
   }
