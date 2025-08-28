@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { Reflector } from '@nestjs/core';
 
 export type JwtPayload = {
   sub: string;
@@ -14,38 +16,47 @@ export type JwtPayload = {
   exp?: number;
 };
 
-export type RequestWithUser = Request & { user?: JwtPayload };
+type CookieJar = Record<string, string | undefined>;
+
+export type RequestWithUser = Omit<Request, 'cookies' | 'signedCookies'> & {
+  cookies?: CookieJar;
+  signedCookies?: CookieJar;
+  user?: JwtPayload;
+};
+
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean[]>(
+      IS_PUBLIC_KEY,
+      [ctx.getHandler(), ctx.getClass()],
+    );
+    if (isPublic) return true;
+
     const token = this.extractTokenFromCookieHeader(
       ctx.switchToHttp().getRequest<RequestWithUser>(),
     );
     if (!token) throw new UnauthorizedException('Guard');
-
-    const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
-      secret: process.env.SECRET_JWT!,
-    });
-    ctx.switchToHttp().getRequest<RequestWithUser>().user = payload;
-    return true;
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: process.env.SECRET_JWT!,
+      });
+      ctx.switchToHttp().getRequest<RequestWithUser>().user = payload;
+      return true;
+    } catch {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
   }
 
-  private extractTokenFromCookieHeader(req: Request): string | undefined {
-    const cookieHeader = req.headers['cookie'];
-    if (typeof cookieHeader !== 'string') return undefined;
-
-    for (const part of cookieHeader.split(';')) {
-      const [k, v] = part.split('=').map((s) => s?.trim());
-      if (k === 'token' && typeof v === 'string' && v.length > 0) {
-        try {
-          return decodeURIComponent(v);
-        } catch {
-          return v;
-        }
-      }
-    }
-    return undefined;
+  private extractTokenFromCookieHeader(
+    req: RequestWithUser,
+  ): string | undefined {
+    const token = req.signedCookies?.token ?? req.cookies?.token;
+    return typeof token === 'string' && token.length > 0 ? token : undefined;
   }
 }

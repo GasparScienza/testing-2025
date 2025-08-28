@@ -24,8 +24,7 @@ export class RolesGuard implements CanActivate {
 
     if (!role) throw new ForbiddenException('No tiene roles asignados');
 
-    // const ok = required.includes(role);
-    const ok = required.some((r) => required.includes(r));
+    const ok = required.includes(role);
     if (!ok) throw new ForbiddenException('Rol insuficiente');
 
     return true;

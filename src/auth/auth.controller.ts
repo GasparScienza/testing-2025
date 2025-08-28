@@ -13,11 +13,13 @@ import { SignUpDTO } from './dto/sign-up.dto';
 import { AuthGuard } from './guards/auth.guard';
 import { Roles } from './decorators/role.decorator';
 import { RolesGuard } from './guards/role.guard';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('/login')
   async signIn(
     @Body() signInDto: SignInDto,
@@ -35,6 +37,7 @@ export class AuthController {
     res.clearCookie('token');
   }
 
+  @Public()
   @Post('/signup')
   async signUp(
     @Body() body: SignUpDTO,

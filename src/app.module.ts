@@ -5,6 +5,10 @@ import { ClientModule } from './client/client.module';
 import { PaymentModule } from './payment/payment.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { RolesGuard } from './auth/guards/role.guard';
 
 @Module({
   imports: [
@@ -16,6 +20,17 @@ import { ConfigModule } from '@nestjs/config';
     ClientModule,
     PaymentModule,
     PrismaModule,
+  ],
+  providers: [
+    JwtService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule {}
