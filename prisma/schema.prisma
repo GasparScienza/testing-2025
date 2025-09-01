@@ -39,6 +39,24 @@ model Client {
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
+
+  dates Date[]
+}
+
+model Date {
+  id       String   @id @default(cuid())
+  day      DateTime
+  startsAt DateTime
+  endsAt   DateTime
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([day, startsAt, endsAt])
+  @@index([day])
 }
 
 model Pet {
