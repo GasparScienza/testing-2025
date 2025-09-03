@@ -9,8 +9,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { RolesGuard } from './auth/guards/role.guard';
-import { validationSchema } from 'config/validation.schema';
 import { BullModule } from '@nestjs/bullmq';
+import { validationSchema } from './config/validation.schema';
 
 @Module({
   imports: [

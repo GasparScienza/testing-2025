@@ -9,7 +9,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "types": ["reflect-metadata"],
+    "types": ["reflect-metadata", "jest"],
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
