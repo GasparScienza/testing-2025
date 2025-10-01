@@ -1,34 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { DateService } from './date.service';
-import { CreateDateDto } from './dto/create-date.dto';
-import { UpdateDateDto } from './dto/update-date.dto';
+import { Controller, Post, Body, Req } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { CreateDateJobDTO } from './dto/create-date.dto';
+import { Queue } from 'bullmq';
+import { RequestWithUser } from 'src/auth/guards/auth.guard';
+import { CREATE_DATE_JOB, DATE_QUEUE } from './date.queue';
 
-@Controller('date')
+@Controller(DATE_QUEUE)
 export class DateController {
-  constructor(private readonly dateService: DateService) {}
+  constructor(@InjectQueue(DATE_QUEUE) private readonly queue: Queue) {}
 
-  @Post()
-  create(@Body() createDateDto: CreateDateDto) {
-    return this.dateService.create(createDateDto);
-  }
+  @Post('enqueue')
+  async enqueue(@Req() req: RequestWithUser, @Body() body: CreateDateJobDTO) {
+    try {
+      const job = await this.queue.add(
+        CREATE_DATE_JOB,
+        {
+          clientId: req.user?.sub,
+          day: body.day,
+          startTime: body.startTime,
+          endTime: body.endTime,
+          timezone: body.timezone ?? 'America/Argentina/Buenos_Aires',
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
 
-  @Get()
-  findAll() {
-    return this.dateService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.dateService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDateDto: UpdateDateDto) {
-    return this.dateService.update(+id, updateDateDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.dateService.remove(+id);
+      return { jobId: job.id };
+    } catch (error) {
+      console.log('ERROR');
+      console.log(error);
+    }
   }
 }

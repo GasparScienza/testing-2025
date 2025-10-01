@@ -1,26 +1,108 @@
-import { Injectable } from '@nestjs/common';
-import { CreateDateDto } from './dto/create-date.dto';
-import { UpdateDateDto } from './dto/update-date.dto';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { CreateDateJobDTO } from './dto/create-date.dto';
+import { DateTime } from 'luxon';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class DateService {
-  create(createDateDto: CreateDateDto) {
-    return 'This action adds a new date';
+  constructor(private readonly prisma: PrismaService) {}
+
+  private buildDateTimes(dto: CreateDateJobDTO) {
+    const tz = dto.timezone ?? 'America/Argentina/Buenos_Aires';
+    const dayStart = DateTime.fromISO(dto.day, { zone: tz }).startOf('day');
+    if (!dayStart.isValid) throw new BadRequestException('day inválido');
+
+    const [startH, startM] = dto.startTime.split(':').map(Number);
+    const [endH, endM] = dto.endTime.split(':').map(Number);
+
+    const startsAt = dayStart.set({
+      hour: startH,
+      minute: startM,
+      second: 0,
+      millisecond: 0,
+    });
+    const endsAt = dayStart.set({
+      hour: endH,
+      minute: endM,
+      second: 0,
+      millisecond: 0,
+    });
+
+    if (!startsAt.isValid || !endsAt.isValid) {
+      throw new BadRequestException('startTime/endTime inválidos');
+    }
+    if (endsAt <= startsAt) {
+      throw new BadRequestException('endTime debe ser mayor que startTime');
+    }
+
+    const now = DateTime.now().setZone(tz);
+    if (startsAt < now) {
+      throw new BadRequestException(
+        'No se puede crear un turno en una fecha/hora anterior a la actual',
+      );
+    }
+
+    return {
+      tz,
+      day: dayStart.toUTC().toJSDate(),
+      startsAt: startsAt.toUTC().toJSDate(),
+      endsAt: endsAt.toUTC().toJSDate(),
+    };
   }
 
-  findAll() {
-    return `This action returns all date`;
+  async findExisting(dto: CreateDateJobDTO) {
+    const { day, startsAt, endsAt } = this.buildDateTimes(dto);
+
+    return await this.prisma.date.findFirst({
+      where: {
+        day,
+        startsAt: { gte: startsAt },
+        endsAt: { lte: endsAt },
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} date`;
+  async findOverlapping(dto: CreateDateJobDTO) {
+    const { day, startsAt, endsAt } = this.buildDateTimes(dto);
+
+    return await this.prisma.date.findFirst({
+      where: {
+        day,
+        startsAt: { lt: endsAt },
+        endsAt: { gt: startsAt },
+      },
+    });
   }
 
-  update(id: number, updateDateDto: UpdateDateDto) {
-    return `This action updates a #${id} date`;
+  private async create(dto: CreateDateJobDTO) {
+    const { day, startsAt, endsAt } = this.buildDateTimes(dto);
+    const result = await this.prisma.date.create({
+      data: {
+        day,
+        startsAt,
+        endsAt,
+        client: { connect: { userId: dto.clientId } },
+      },
+    });
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} date`;
+  async createDate(dto: CreateDateJobDTO) {
+    const existing = await this.findExisting(dto);
+    if (existing) throw new ConflictException('Ya existe este turno');
+
+    const overlap = await this.findOverlapping(dto);
+    if (overlap) {
+      throw new BadRequestException(
+        'Ya existe un turno que se solapa con el intervalo solicitado.',
+      );
+    }
+
+    const date = await this.create(dto);
+    return { created: true, date };
   }
 }
