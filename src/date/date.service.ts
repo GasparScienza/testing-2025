@@ -3,9 +3,9 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { CreateDateJobDTO } from './dto/create-date.dto';
 import { DateTime } from 'luxon';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateDateJobDTO } from './dto/create-date.dto';
 
 @Injectable()
 export class DateService {

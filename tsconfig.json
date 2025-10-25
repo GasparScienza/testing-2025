@@ -10,7 +10,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "types": ["reflect-metadata", "jest"],
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -18,6 +17,11 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "useUnknownInCatchVariables": true
+    "useUnknownInCatchVariables": true,
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["./src/*"],
+      "@/*": ["./src/*"]
+    }
   }
 }
