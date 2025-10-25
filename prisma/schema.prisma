@@ -26,6 +26,7 @@ model User {
   createdAt DateTime @default(now())
 
   client Client?
+  active Boolean @default(true)
 }
 
 model Client {
@@ -66,4 +67,5 @@ model Pet {
 
   clientId String
   client   Client @relation(references: [id], fields: [clientId])
+  active Boolean @default(true)
 }

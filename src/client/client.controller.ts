@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -13,6 +25,8 @@ export class ClientController {
   }
 
   @Get()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('ADMIN')
   findAll() {
     return this.clientService.findAll();
   }

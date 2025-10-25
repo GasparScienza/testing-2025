@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ClientService } from './client.service';
+import { JwtService } from '@nestjs/jwt';
 import { ClientController } from './client.controller';
+import { ClientService } from './client.service';
 
 @Module({
   controllers: [ClientController],
-  providers: [ClientService],
+  providers: [ClientService, JwtService],
 })
 export class ClientModule {}
