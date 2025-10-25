@@ -1,12 +1,12 @@
-import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { SignInDto } from './dto/sign-in.dto';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthService } from './auth.service';
+import { Public } from './decorators/public.decorator';
+import { Roles } from './decorators/role.decorator';
+import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDTO } from './dto/sign-up.dto';
 import { AuthGuard } from './guards/auth.guard';
-import { Roles } from './decorators/role.decorator';
 import { RolesGuard } from './guards/role.guard';
-import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -20,6 +20,7 @@ export class AuthController {
   ) {
     const token = await this.authService.signIn(signInDto);
     res.cookie('token', token);
+    res.status(200);
     res.send({ success: true });
   }
 
@@ -44,8 +45,8 @@ export class AuthController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN', 'USER')
-  @Post('/role')
+  @Get('/me')
   testRouteWithRole() {
-    return;
+    return true;
   }
 }
