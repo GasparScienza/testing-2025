@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/role.decorator';
@@ -19,7 +28,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = await this.authService.signIn(signInDto);
-    res.cookie('token', token);
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+    });
     res.status(200);
     res.send({ success: true });
   }
@@ -46,7 +59,8 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN', 'USER')
   @Get('/me')
-  testRouteWithRole() {
-    return true;
+  async testRouteWithRole(@Req() req: Request) {
+    if (!req.user?.sub) throw new UnauthorizedException();
+    return await this.authService.getData(req.user?.sub);
   }
 }

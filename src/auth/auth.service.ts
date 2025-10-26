@@ -78,4 +78,13 @@ export class AuthService {
       throw e;
     }
   }
+
+  async getData(id: string) {
+    return await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      omit: { password: true },
+    });
+  }
 }

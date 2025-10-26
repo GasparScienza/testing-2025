@@ -16,6 +16,18 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:3000',
+      'https://localhost:4200',
+      'https://localhost:3000',
+    ], // dominios permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // permite cabeceras personalizadas
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // habilita métodos
+    credentials: true, // permite cookies o cabeceras de autenticación
+  });
+
   const config = new DocumentBuilder()
     .setTitle('VetCare')
     .setDescription('API documentation')
