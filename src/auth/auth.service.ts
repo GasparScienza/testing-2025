@@ -83,6 +83,18 @@ export class AuthService {
     return await this.prisma.user.findUniqueOrThrow({
       where: {
         id,
+        active: true,
+      },
+      include: {
+        client: {
+          include: {
+            pets: {
+              where: {
+                active: true,
+              },
+            },
+          },
+        },
       },
       omit: { password: true },
     });

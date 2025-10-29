@@ -11,6 +11,10 @@ import { CreateDateJobDTO } from './dto/create-date.dto';
 export class DateService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getDates() {
+    return await this.prisma.date.findMany();
+  }
+
   private buildDateTimes(dto: CreateDateJobDTO) {
     const tz = dto.timezone ?? 'America/Argentina/Buenos_Aires';
     const dayStart = DateTime.fromISO(dto.day, { zone: tz }).startOf('day');

@@ -68,4 +68,15 @@ model Pet {
   clientId String
   client   Client @relation(references: [id], fields: [clientId])
   active Boolean @default(true)
+
+  notes Note[]
+  createdAt DateTime @default(now())
+}
+
+model Note {
+  id     String @id @default(uuid())
+  description String
+
+  pet   Pet @relation(fields: [petId], references: [id])
+  petId String
 }

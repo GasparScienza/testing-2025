@@ -1,7 +1,8 @@
+import { Type } from 'class-transformer';
 import {
   IsEmail,
+  IsInt,
   IsNotEmpty,
-  IsNumberString,
   IsString,
   MaxLength,
   MinLength,
@@ -20,9 +21,8 @@ export class SignUpDTO {
   @IsString()
   address: string;
 
-  @IsNotEmpty()
-  @IsNumberString()
-  @MinLength(7)
+  @Type(() => Number) // transforma "dni" a number con transform:true
+  @IsInt()
   dni: string;
 
   @IsNotEmpty()

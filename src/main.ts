@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { BigIntInterceptor } from './utils/bigint.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,11 +11,11 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
       whitelist: true,
-      // transform: true,
+      transform: true,
     }),
   );
+  app.useGlobalInterceptors(new BigIntInterceptor());
 
   app.enableCors({
     origin: [

@@ -18,7 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "cucumber": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require \"test/steps/**/*.ts\" test/features/**/*.feature"
+    "cucumberold": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require \"test/steps/**/*.ts\" test/features/**/*.feature",
+    "cucumberold:integration": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require \"test/steps/**/*.ts\" test/features/**/*.feature --tags @integration",
+     "cucumber": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature",
+  "cucumber:integration": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature --tags @integration"
   },
   "dependencies": {
     "@nestjs/bull": "^11.0.3",
@@ -64,6 +67,7 @@
     "expect": "^30.2.0",
     "globals": "^15.14.0",
     "jest": "^29.7.0",
+    "jest-mock": "^30.2.0",
     "prettier": "^3.4.2",
     "prisma": "^6.14.0",
     "source-map-support": "^0.5.21",

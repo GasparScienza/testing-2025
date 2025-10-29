@@ -16,3 +16,10 @@ Feature: Endpoints de autenticación
     When hago POST "/auth/logout" con la cookie
     Then la cookie "token" se invalida
     And acceder a "/auth/me" devuelve 401
+
+  
+  @integration
+  Scenario: Acceso a ruta admin con rol insuficiente
+    Dado un usuario con rol "user" logueado
+    Cuando accedo a GET /admin/clients
+    Entonces recibo 403

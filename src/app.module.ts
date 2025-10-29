@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RolesGuard } from './auth/guards/role.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { validationSchema } from './config/validation.schema';
+import { PetModule } from './pet/pet.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { validationSchema } from './config/validation.schema';
     ClientModule,
     PaymentModule,
     PrismaModule,
+    PetModule,
   ],
   providers: [
     JwtService,

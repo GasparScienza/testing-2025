@@ -8,13 +8,13 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/role.decorator';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDTO } from './dto/sign-up.dto';
-import { AuthGuard } from './guards/auth.guard';
+import { AuthGuard, RequestWithUser } from './guards/auth.guard';
 import { RolesGuard } from './guards/role.guard';
 
 @Controller('auth')
@@ -38,6 +38,7 @@ export class AuthController {
   }
 
   @Post('/logout')
+  @Public()
   signOut(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token');
   }
@@ -59,7 +60,8 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN', 'USER')
   @Get('/me')
-  async testRouteWithRole(@Req() req: Request) {
+  async testRouteWithRole(@Req() req: RequestWithUser) {
+    console.log(req.user);
     if (!req.user?.sub) throw new UnauthorizedException();
     return await this.authService.getData(req.user?.sub);
   }
