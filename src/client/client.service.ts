@@ -5,7 +5,7 @@ import { FindClientsDto } from './dto/page.dto';
 
 @Injectable()
 export class ClientService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAll(dto: FindClientsDto) {
     const {
@@ -34,7 +34,9 @@ export class ClientService {
         try {
           const dni = BigInt(term);
           or.push({ dni }); // equals exacto por ser BigInt
-        } catch {}
+        } catch {
+          throw new NotFoundException();
+        }
       }
 
       where.OR = or;
