@@ -20,8 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "cucumberold": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require \"test/steps/**/*.ts\" test/features/**/*.feature",
     "cucumberold:integration": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require \"test/steps/**/*.ts\" test/features/**/*.feature --tags @integration",
-     "cucumber": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature",
-  "cucumber:integration": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature --tags @integration"
+    "cucumber": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature",
+    "cucumber:integration": "cucumber-js --require-module ts-node/register --require-module tsconfig-paths/register --require test/steps/setup.before.ts --require test/steps/common.steps.ts --require test/steps/**/*.steps.ts test/features/**/*.feature --tags @integration"
   },
   "dependencies": {
     "@nestjs/bull": "^11.0.3",

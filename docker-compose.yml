@@ -64,12 +64,23 @@ services:
     ports:
       - "3001:3000"
     environment:
-      # DATABASE_URL: postgres://postgres:admin@db:5432/veterinaria
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       SECRET_JWT: ${SECRET_JWT}
-    command: ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
-    # command: ["node", "dist/src/main"]
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    restart: unless-stopped
+    user: root
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   pgdata:
   redis-data:
+  jenkins-home:
