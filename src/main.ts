@@ -1,13 +1,33 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import { AppModule } from './app.module';
+import { BigIntInterceptor } from './utils/bigint.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      forbidNonWhitelisted: true,
+      whitelist: true,
+      transform: true,
+    }),
+  );
+  app.useGlobalInterceptors(new BigIntInterceptor());
+
+  app.enableCors({
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:3000',
+      'https://localhost:4200',
+      'https://localhost:3000',
+    ], // dominios permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // permite cabeceras personalizadas
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // habilita métodos
+    credentials: true, // permite cookies o cabeceras de autenticación
+  });
 
   const config = new DocumentBuilder()
     .setTitle('VetCare')

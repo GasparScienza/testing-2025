@@ -3,13 +3,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SignInDto } from './dto/sign-in.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
-import { SignUpDTO } from './dto/sign-up.dto';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { isPrismaKnown } from 'src/prisma/known-error.helper';
+import { PrismaService } from '../prisma/prisma.service';
+import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDTO } from './dto/sign-up.dto';
 
 const SALT_ROUNDS = 12;
 
@@ -77,5 +77,26 @@ export class AuthService {
       }
       throw e;
     }
+  }
+
+  async getData(id: string) {
+    return await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+        active: true,
+      },
+      include: {
+        client: {
+          include: {
+            pets: {
+              where: {
+                active: true,
+              },
+            },
+          },
+        },
+      },
+      omit: { password: true },
+    });
   }
 }

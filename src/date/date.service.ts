@@ -3,13 +3,17 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { CreateDateJobDTO } from './dto/create-date.dto';
 import { DateTime } from 'luxon';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateDateJobDTO } from './dto/create-date.dto';
 
 @Injectable()
 export class DateService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getDates() {
+    return await this.prisma.date.findMany();
+  }
 
   private buildDateTimes(dto: CreateDateJobDTO) {
     const tz = dto.timezone ?? 'America/Argentina/Buenos_Aires';

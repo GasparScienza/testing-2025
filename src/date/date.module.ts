@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { DateService } from './date.service';
-import { DateController } from './date.controller';
 import { BullModule } from '@nestjs/bullmq';
-import { DATE_QUEUE, DateQueue } from './date.queue';
-import { DateProcessor } from './date.processor';
+import { Module } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { DateController } from './date.controller';
+import { DateProcessor } from './date.processor';
+import { DATE_QUEUE, DateQueue } from './date.queue';
+import { DateService } from './date.service';
 
 @Module({
   imports: [

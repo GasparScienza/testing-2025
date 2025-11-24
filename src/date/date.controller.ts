@@ -1,16 +1,28 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
-import { CreateDateJobDTO } from './dto/create-date.dto';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { RequestWithUser } from 'src/auth/guards/auth.guard';
 import { CREATE_DATE_JOB, DATE_QUEUE } from './date.queue';
+import { DateService } from './date.service';
+import { CreateDateRequestDTO } from './dto/create-date.dto';
 
 @Controller(DATE_QUEUE)
 export class DateController {
-  constructor(@InjectQueue(DATE_QUEUE) private readonly queue: Queue) {}
+  constructor(
+    @InjectQueue(DATE_QUEUE) private readonly queue: Queue,
+    private readonly dateService: DateService,
+  ) {}
+
+  @Get()
+  async getDates() {
+    return await this.dateService.getDates();
+  }
 
   @Post('enqueue')
-  async enqueue(@Req() req: RequestWithUser, @Body() body: CreateDateJobDTO) {
+  async enqueue(
+    @Req() req: RequestWithUser,
+    @Body() body: CreateDateRequestDTO,
+  ) {
     try {
       const job = await this.queue.add(
         CREATE_DATE_JOB,
