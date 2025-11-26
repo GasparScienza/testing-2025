@@ -12,12 +12,22 @@ import { RolesGuard } from './auth/guards/role.guard';
 import { BullModule } from '@nestjs/bullmq';
 import { validationSchema } from './config/validation.schema';
 import { PetModule } from './pet/pet.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AppLoggingService } from './utils/logging.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 100
+        }
+      ]
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -47,6 +57,7 @@ import { PetModule } from './pet/pet.module';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    AppLoggingService
   ],
 })
-export class AppModule {}
+export class AppModule { }
