@@ -5,9 +5,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RolesGuard } from './guards/role.guard';
+import googleOauthConfig from 'src/config/google-oauth.config';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { TurnstileService } from './turnstile.service';
 
 @Module({
   imports: [
+    // GoogleStrategy,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -17,9 +21,10 @@ import { RolesGuard } from './guards/role.guard';
         signOptions: { expiresIn: '900s' },
       }),
     }),
+    ConfigModule.forFeature(googleOauthConfig),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, ConfigService, RolesGuard],
+  providers: [AuthService, PrismaService, TurnstileService, ConfigService, RolesGuard, GoogleStrategy],
   exports: [RolesGuard],
 })
-export class AuthModule {}
+export class AuthModule { }

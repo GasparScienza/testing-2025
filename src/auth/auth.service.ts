@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +16,7 @@ const SALT_ROUNDS = 12;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -34,6 +36,10 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Credenciales inválidas');
 
     const payload = { sub: user.id, role: user.role };
+    return await this.jwtService.signAsync(payload);
+  }
+
+  async getJwtSigned(payload: any) {
     return await this.jwtService.signAsync(payload);
   }
 

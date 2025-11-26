@@ -16,4 +16,8 @@ export class SignInDto {
   @MinLength(5)
   @MaxLength(25)
   password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  turnstileToken: string;
 }
